@@ -1,3 +1,5 @@
+import { sendEmail } from "./_email.js";
+
 const esc = (v="") => String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const clp = n => new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(Number(n)||0);
 const plain = s => String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\x20-\x7E]/g,"?");
@@ -40,14 +42,6 @@ function receiptPdf(order) {
   pdf+="trailer\n<< /Size "+(objs.length+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF";
   return Buffer.from(pdf,"latin1").toString("base64");
 }
-async function sendResend({to,subject,html,attachments}) {
-  const key=process.env.RESEND_API_KEY, from=process.env.RESEND_FROM_EMAIL;
-  if(!key||!from)throw new Error("Falta configurar RESEND_API_KEY y RESEND_FROM_EMAIL en Vercel.");
-  const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({from,to,subject,html,attachments})});
-  const body=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(body.message||"Proveedor de correo rechazó el envío.");
-  return body.id;
-}
 async function logEvent(type,to,orderId,status,providerId,error,metadata={}) {
   const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!url||!key)return;
@@ -72,11 +66,11 @@ export default async function handler(req,res) {
   const pdf=receiptPdf(order), attachments=[{filename:"comprobante-"+String(order.id).replace(/[^a-zA-Z0-9-]/g,"")+".pdf",content:pdf}];
   let sent=[];
   try {
-    const id=await sendResend({to:email,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",html,attachments});
+    const id=await sendEmail({to:email,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",html,attachments});
     sent.push({to:email,id});await logEvent("order_confirmation",email,order.id,"sent",id,null,{});
   } catch(e) {await logEvent("order_confirmation",email,order.id,"failed",null,e.message,{});return res.status(503).json({sent:false,error:e.message});}
   if(admin&&admin!==email) {
-    try {const id=await sendResend({to:admin,subject:"Nuevo pedido "+order.id+" · Retail SmartCart",html:html.replace("¡Gracias, "+esc(order.customer?.fullName||"por tu compra")+"!","Nuevo pedido recibido").replace("Adjuntamos tu comprobante en PDF.","Se adjunta el comprobante del pedido."),attachments});sent.push({to:admin,id});await logEvent("new_order_admin",admin,order.id,"sent",id,null,{customer_email:email});}
+    try {const id=await sendEmail({to:admin,subject:"Nuevo pedido "+order.id+" · Retail SmartCart",html:html.replace("¡Gracias, "+esc(order.customer?.fullName||"por tu compra")+"!","Nuevo pedido recibido").replace("Adjuntamos tu comprobante en PDF.","Se adjunta el comprobante del pedido."),attachments});sent.push({to:admin,id});await logEvent("new_order_admin",admin,order.id,"sent",id,null,{customer_email:email});}
     catch(e){await logEvent("new_order_admin",admin,order.id,"failed",null,e.message,{customer_email:email});}
   }
   return res.status(200).json({sent:true,recipients:sent.map(x=>x.to),message:"Correo de confirmación enviado."});
