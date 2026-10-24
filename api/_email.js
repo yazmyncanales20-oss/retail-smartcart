@@ -1,15 +1,16 @@
 import nodemailer from "nodemailer";
 
 function htmlToText(html = "") {
-  return String(html).replace(/<style[\\s\\S]*?<\\/style>/gi, "")
-    .replace(/<script[\\s\\S]*?<\\/script>/gi, "")
-    .replace(/<\\/p>|<\\/div>|<br\\s*\\/?\s*>/gi, "\\n")
+  return String(html)
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/p>|<\/div>|<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/\\s+/g, " ").trim();
+    .replace(/\s+/g, " ").trim();
 }
 
 async function sendViaGmail({ to, subject, html, attachments = [] }) {
@@ -23,7 +24,7 @@ async function sendViaGmail({ to, subject, html, attachments = [] }) {
     host: process.env.SMTP_HOST || "smtp.gmail.com",
     port,
     secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : port === 465,
-    auth: { user, pass: pass.replace(/\\s/g, "") },
+    auth: { user, pass: pass.replace(/\s/g, "") },
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 20000
@@ -32,8 +33,8 @@ async function sendViaGmail({ to, subject, html, attachments = [] }) {
   const fromName = process.env.SMTP_FROM_NAME || "Retail SmartCart";
   const normalizedAttachments = attachments.map((a) => ({
     filename: a.filename,
-    content: Buffer.isBuffer(a.content) ? a.content : Buffer.from(String(a.content || ""), a.encoding === "base64" ? "base64" : "utf8"),
-    contentType: a.contentType || a.content_type
+    content: Buffer.isBuffer(a.content) ? a.content : Buffer.from(String(a.content || ""), "base64"),
+    ...(a.contentType || a.content_type ? { contentType: a.contentType || a.content_type } : {})
   }));
   const result = await transporter.sendMail({
     from: { name: fromName, address: fromAddress },
