@@ -9,5 +9,5 @@ export default async function handler(req,res){
  const r=await fetch(q,{headers:{apikey:key,Authorization:"Bearer "+key}});
  if(!r.ok)return res.status(502).json({error:"No se pudo consultar el pedido."});
  const rows=await r.json();if(!rows.length)return res.status(404).json({error:"Pedido no encontrado. Verifica el código y el correo."});
- const o=rows[0];return res.status(200).json({id:o.order_number,email:o.customer_email,customer:o.customer_email,total:o.total_clp,status:o.status,createdAt:o.created_at});
+ const o=rows[0];return res.status(200).json({id:o.order_number,email:o.customer_email,customer:o.customer_email,total:o.total_clp,status:({"pending":"Pedido recibido","processing":"En preparación","shipped":"Despachado","in_transit":"En camino","delivered":"Entregado","cancelled":"Cancelado"}[o.status]||o.status),createdAt:o.created_at});
 }
