@@ -2,7 +2,7 @@ export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(!["GET","POST"].includes(req.method))return res.status(405).json({error:"Method not allowed"});
  const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
- if(!url||!key)return res.status(503).json({error:"Falta configurar SUPABASE_SERVICE_ROLE_KEY en Vercel Preview."});
+ if(!url||!key)return res.status(503).json({error:"Falta configurar SUPABASE_SERVICE_ROLE_KEY en Vercel Production."});
  const headers={apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Prefer:"return=representation"};
  try{
   if(req.method==="GET"){
