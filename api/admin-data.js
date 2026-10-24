@@ -19,7 +19,7 @@ export default async function handler(req,res){
   }
   return res.status(200).json({
    orders:orders.map(o=>({id:o.order_number,dbId:o.id,email:o.customer_email,customer:o.customer_email,items:counts[o.id]||0,total:o.total_clp,status:({"pending":"Pedido recibido","processing":"En preparación","shipped":"Despachado","in_transit":"En camino","delivered":"Entregado","cancelled":"Cancelado"}[o.status]||o.status),createdAt:o.created_at})),
-   carts:carts.filter(c=>c.status==="active"||c.status==="reminded").map(c=>({id:c.id,token:c.cart_token,customer:c.customer_email,email:c.customer_email,items:Array.isArray(c.cart_items)?c.cart_items.length:0,total:c.subtotal_clp,age:c.last_activity_at,consent:c.marketing_consent,status:c.status,couponCode:c.coupon_code,couponAmount:c.coupon_amount_clp,reminderSentAt:c.reminder_sent_at}))
+   carts:carts.filter(c=>c.status==="active"||c.status==="reminded").map(c=>({id:c.id,token:c.cart_token,status:c.status,customer:c.customer_email,email:c.customer_email,items:Array.isArray(c.cart_items)?c.cart_items.length:0,total:c.subtotal_clp,age:c.last_activity_at,consent:c.marketing_consent,status:c.status,couponCode:c.coupon_code,couponAmount:c.coupon_amount_clp,reminderSentAt:c.reminder_sent_at}))
   });
  }catch(e){return res.status(502).json({error:e.message||"Error consultando Supabase."});}
 }
