@@ -87,3 +87,11 @@
 .tracking-note{font-size:10px;color:var(--muted);line-height:1.6}
 .status-pill{display:inline-block;background:#eef0e8;color:#555d45;padding:6px 10px;font-size:10px}
 @media(max-width:600px){.email-gate{padding:24px}.tracking-form{grid-template-columns:1fr;padding:16px}.tracking-form .primary{grid-column:auto}}
+
+/* Correo transaccional y recuperación de carrito */
+.coupon-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;padding:16px 0;border-top:1px solid var(--line);margin-top:10px}
+.coupon-entry .field{margin:0}
+.coupon-entry .secondary{min-height:42px;white-space:nowrap}
+.email-status-list{padding-left:18px;display:grid;gap:10px;font-size:12px;line-height:1.6;color:var(--muted)}
+.email-status-list b{color:var(--ink)}
+@media(max-width:560px){.coupon-entry{grid-template-columns:1fr}.coupon-entry .secondary{width:100%}}
