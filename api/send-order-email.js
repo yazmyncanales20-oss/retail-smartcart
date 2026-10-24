@@ -62,7 +62,7 @@ export default async function handler(req,res) {
     (process.env.ADMIN_NOTIFICATION_EMAILS || process.env.ADMIN_NOTIFICATION_EMAIL || process.env.VITE_ADMIN_NOTIFICATION_EMAIL || "")
       .split(/[;,]/)
       .map(value => value.trim().toLowerCase())
-      .filter(value => /^\\S+@\\S+\\.\\S+$/.test(value))
+      .filter(value => /^\S+@\S+\.\S+$/.test(value))
   )];
   const items=Array.isArray(order.items)?order.items:[];
   const lines=items.map(i=>'<tr><td style="padding:12px 0;border-bottom:1px solid #eee">'+esc(i.name)+'<div style="color:#777;font-size:12px">'+esc(i.color)+' · Talla '+esc(i.size)+' · '+(Number(i.qty)||1)+' unidad(es)</div></td><td align="right" style="padding:12px 0;border-bottom:1px solid #eee;white-space:nowrap">'+clp((Number(i.price)||0)*(Number(i.qty)||1))+'</td></tr>').join("");
