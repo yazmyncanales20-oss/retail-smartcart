@@ -2,8 +2,9 @@ const emailOk=s=>/^\S+@\S+\.\S+$/.test(String(s||""));
 export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});
- const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
- if(!url||!key)return res.status(503).json({error:"La base de datos de la vista previa aún no está conectada: falta SUPABASE_SERVICE_ROLE_KEY en Vercel Preview."});
+ const rawUrl=process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL;const url=String(rawUrl||"").trim().replace(/\\/+$/, "").replace(/\\/rest\\/v1$/i, "");const key=process.env.SUPABASE_SERVICE_ROLE_KEY;
+ if(!url||!key)return res.status(503).json({error:"Falta SUPABASE_URL y/o SUPABASE_SERVICE_ROLE_KEY en Vercel."});
+ try { const parsed=new URL(url); if(!["https:","http:"].includes(parsed.protocol)||parsed.pathname!=="/") return res.status(503).json({error:"SUPABASE_URL debe ser la Project URL raíz (https://<project-ref>.supabase.co), sin /dashboard ni /rest/v1."}); } catch { return res.status(503).json({error:"SUPABASE_URL no es una URL válida. Usa la Project URL raíz de Supabase."}); }
  const b=req.body||{};
  if(!emailOk(b.email)||!Array.isArray(b.items)||!b.items.length||b.items.length>60)return res.status(400).json({error:"Correo o detalle de compra inválido."});
  const items=b.items.map(i=>({product_name_snapshot:String(i.name||"Prenda").slice(0,160),color_name_snapshot:String(i.color||"Sin especificar").slice(0,80),size_snapshot:String(i.size||"Sin especificar").slice(0,30),quantity:Math.max(1,Math.min(50,Math.floor(Number(i.qty)||1))),unit_price_clp:Math.max(0,Math.round(Number(i.price)||0)),variant_id:null}));
@@ -16,7 +17,7 @@ export default async function handler(req,res){
  try{
   const created=await fetch(url+"/rest/v1/orders",{method:"POST",headers,body:JSON.stringify({order_number:orderNumber,customer_email:String(b.email).toLowerCase(),status:"pending",delivery_method:b.delivery==="Retiro en tienda"?"store_pickup":"home_delivery",subtotal_clp:subtotal,shipping_clp:shipping,total_clp:total,payment_mode:"simulated"})});
   const orderRows=await created.json().catch(()=>[]);
-  if(!created.ok||!orderRows[0])return res.status(502).json({error:"Supabase no pudo registrar el pedido: "+(orderRows?.message||created.statusText)});
+  if(!created.ok||!orderRows[0])return res.status(502).json({error:"Supabase no pudo registrar el pedido: "+(orderRows?.message||orderRows?.error||orderRows?.hint||created.statusText)});
   const order=orderRows[0];
   const lines=items.map(i=>({...i,order_id:order.id}));
   const lineResponse=await fetch(url+"/rest/v1/order_items",{method:"POST",headers,body:JSON.stringify(lines)});
