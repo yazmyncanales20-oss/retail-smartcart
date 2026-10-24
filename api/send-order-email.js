@@ -65,9 +65,22 @@ export default async function handler(req,res) {
   const html='<div style="margin:0;background:#f4f3ef;padding:28px 12px;font-family:Arial,sans-serif;color:#292b25"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;overflow:hidden"><div style="background:#27352b;padding:30px;color:#fff"><div style="font-size:25px;font-weight:700;letter-spacing:-1px">retail<span style="color:#d9c8a6">smartcart</span></div><div style="font-size:10px;letter-spacing:3px;margin-top:8px;color:#e1e2d9">MODA CON INTENCIÓN</div></div><div style="padding:30px"><p style="color:#777;font-size:11px;letter-spacing:2px">GRACIAS POR ELEGIRNOS</p><h1 style="font-size:27px;margin:8px 0 12px">¡Gracias, '+esc(order.customer?.fullName||"por tu compra")+'!</h1><p style="color:#5c6058;line-height:1.7">Tu pedido quedó registrado en nuestra tienda de demostración. Aquí tienes el resumen y el código para consultar su estado.</p><div style="background:#f5f4ef;border:1px solid #e5e2d8;border-radius:12px;padding:18px;margin:22px 0"><div style="font-size:11px;color:#777">CÓDIGO DE PEDIDO</div><div style="font-size:24px;font-weight:700;letter-spacing:1px;margin:7px 0">'+esc(order.id)+'</div><div style="font-size:12px;color:#666">Estado inicial: Pedido recibido</div></div><h3 style="font-size:16px">Tu compra</h3><table style="width:100%;border-collapse:collapse;font-size:13px">'+lines+'</table><div style="margin-top:18px;font-size:13px"><p>Subtotal <b style="float:right">'+clp(order.subtotal)+'</b></p><p>Despacho <b style="float:right">'+clp(order.shipping)+'</b></p><p style="border-top:1px solid #ddd;padding-top:14px;font-size:18px">Total de demostración <b style="float:right">'+clp(order.total)+'</b></p></div><p style="margin:26px 0"><a href="'+esc(tracking)+'" style="background:#27352b;color:#fff;text-decoration:none;padding:14px 20px;border-radius:8px;display:inline-block">Seguir mi pedido</a></p><p style="font-size:12px;color:#6e7169;line-height:1.7">Adjuntamos tu comprobante en PDF. Este es un prototipo académico: no se procesó ningún cobro y el documento no es una boleta tributaria electrónica del SII.</p><p style="font-size:12px;color:#6e7169">Con cariño,<br><b>Equipo Retail SmartCart</b></p></div></div></div>';
   const pdf=receiptPdf(order), attachments=[{filename:"comprobante-"+String(order.id).replace(/[^a-zA-Z0-9-]/g,"")+".pdf",content:pdf}];
   let sent=[];
+  const emailJsReady=Boolean(process.env.EMAILJS_SERVICE_ID&&process.env.EMAILJS_TEMPLATE_ID&&process.env.EMAILJS_PUBLIC_KEY);
+  const emailJsItems='<table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">'+lines+'</table>';
+  const emailJsParams={
+    to_email:email,
+    customer_name:order.customer?.fullName||"Cliente",
+    order_id:String(order.id),
+    items_html:emailJsItems,
+    order_total:clp(order.total),
+    tracking_url:tracking
+  };
   try {
-    const id=await sendEmail({to:email,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",html,attachments});
-    sent.push({to:email,id});await logEvent("order_confirmation",email,order.id,"sent",id,null,{});
+    const sendOptions=emailJsReady
+      ? {to:email,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",templateId:process.env.EMAILJS_TEMPLATE_ID,templateParams:emailJsParams}
+      : {to:email,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",html,attachments};
+    const id=await sendEmail(sendOptions);
+    sent.push({to:email,id});await logEvent("order_confirmation",email,order.id,"sent",id,null,{provider:emailJsReady?"emailjs":"configured-fallback"});
   } catch(e) {await logEvent("order_confirmation",email,order.id,"failed",null,e.message,{});return res.status(503).json({sent:false,error:e.message});}
   if(admin&&admin!==email) {
     try {const id=await sendEmail({to:admin,subject:"Nuevo pedido "+order.id+" · Retail SmartCart",html:html.replace("¡Gracias, "+esc(order.customer?.fullName||"por tu compra")+"!","Nuevo pedido recibido").replace("Adjuntamos tu comprobante en PDF.","Se adjunta el comprobante del pedido."),attachments});sent.push({to:admin,id});await logEvent("new_order_admin",admin,order.id,"sent",id,null,{customer_email:email});}
