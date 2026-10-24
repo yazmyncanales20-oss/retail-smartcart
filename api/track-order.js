@@ -2,7 +2,7 @@ export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(req.method!=="GET")return res.status(405).json({error:"Method not allowed"});
  const orderNumber=String(req.query?.order||"").trim(),email=String(req.query?.email||"").trim().toLowerCase();
- if(!orderNumber||!/^\\S+@\\S+\\.\\S+$/.test(email))return res.status(400).json({error:"Ingresa número de pedido y correo válido."});
+ if(!orderNumber||!/^\S+@\S+\.\S+$/.test(email))return res.status(400).json({error:"Ingresa número de pedido y correo válido."});
  const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
  if(!url||!key)return res.status(503).json({error:"Seguimiento temporalmente no disponible: falta conectar Supabase en Preview."});
  const q=url+"/rest/v1/orders?order_number=eq."+encodeURIComponent(orderNumber)+"&customer_email=eq."+encodeURIComponent(email)+"&select=order_number,customer_email,status,total_clp,created_at&limit=1";
