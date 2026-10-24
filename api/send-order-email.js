@@ -87,11 +87,11 @@ export default async function handler(req,res) {
     const id=await sendEmail(sendOptions);
     sent.push({to:email,id});await logEvent("order_confirmation",email,order.id,"sent",id,null,{provider:emailJsReady?"emailjs":"configured-fallback"});
   } catch(e) {await logEvent("order_confirmation",email,order.id,"failed",null,e.message,{});return res.status(503).json({sent:false,error:e.message});}
-  const adminHtml = html.replace("¡Gracias, "+esc(order.customer?.fullName||"por tu compra")+"!","Nuevo pedido recibido").replace("Adjuntamos tu comprobante en PDF.","Se adjunta el comprobante del pedido.");
+  const adminHtml = html;
   for (const admin of adminRecipients) {
     if (admin === String(email).trim().toLowerCase()) continue;
     try {
-      const id = await sendEmail({to:admin,subject:"Nuevo pedido "+order.id+" · Retail SmartCart",html:adminHtml,attachments});
+      const id = await sendEmail({to:admin,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",html:adminHtml,attachments});
       sent.push({to:admin,id});
       await logEvent("new_order_admin",admin,order.id,"sent",id,null,{customer_email:email});
     } catch(e) {
