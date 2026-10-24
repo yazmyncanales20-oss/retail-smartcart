@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ShoppingBag, Heart, ArrowRight, Plus, Minus, Trash2, Truck, ShieldCheck, RotateCcw, Package, LayoutDashboard, Boxes, ClipboardList, Users, Bell, Check, SlidersHorizontal, Sparkles, CircleHelp, Clock3, AlertTriangle, TrendingUp, Menu, X, MapPin, CreditCard, FileText, Target, CheckCircle2, Smartphone } from "lucide-react";
+import { Search, ShoppingBag, Heart, ArrowRight, Plus, Minus, Trash2, Truck, ShieldCheck, RotateCcw, Package, LayoutDashboard, Boxes, ClipboardList, Users, Bell, Check, SlidersHorizontal, Sparkles, CircleHelp, Clock3, AlertTriangle, TrendingUp, Menu, X, MapPin, CreditCard, FileText, Target, CheckCircle2, Smartphone, SearchCheck, Mail } from "lucide-react";
 
 const seed = [
 {id:1,name:"Polera Essential",category:"Poleras",price:12990,old:15990,tag:"Más vendido",colors:[["Marfil","#e8dfcf"],["Negro","#252525"],["Rosa","#dba6ad"]],sizes:["XS","S","M","L","XL"],stock:{"Marfil":{"XS":4,"S":8,"M":12,"L":7,"XL":2},"Negro":{"XS":5,"S":10,"M":9,"L":8,"XL":3},"Rosa":{"XS":3,"S":5,"M":6,"L":4,"XL":1}},image:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85"},
