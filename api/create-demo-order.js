@@ -1,4 +1,4 @@
-const emailOk=s=>/^\\S+@\\S+\\.\\S+$/.test(String(s||""));
+const emailOk=s=>/^\S+@\S+\.\S+$/.test(String(s||""));
 export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});
