@@ -59,6 +59,11 @@ export default async function handler(req,res) {
   const body=req.body||{};
   const {email,order}=body;
   if(!email||!/^\S+@\S+\.\S+$/.test(email)||!order?.id)return res.status(400).json({error:"Faltan correo o número de pedido."});
+  const dbUrl=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,dbKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if(!dbUrl||!dbKey)return res.status(503).json({sent:false,error:"Falta configurar la clave privada de Supabase en Vercel."});
+  const verified=await fetch(dbUrl+"/rest/v1/orders?order_number=eq."+encodeURIComponent(String(order.id))+"&customer_email=eq."+encodeURIComponent(String(email).toLowerCase())+"&select=order_number&limit=1",{headers:{apikey:dbKey,Authorization:"Bearer "+dbKey}});
+  if(!verified.ok)return res.status(502).json({sent:false,error:"No se pudo validar el pedido en la base de datos."});
+  if(!(await verified.json()).length)return res.status(403).json({sent:false,error:"El pedido no está registrado en la base de datos; no se envió el correo."});
   const admin=process.env.ADMIN_NOTIFICATION_EMAIL||process.env.VITE_ADMIN_NOTIFICATION_EMAIL;
   const items=Array.isArray(order.items)?order.items:[];
   const lines=items.map(i=>'<tr><td style="padding:12px 0;border-bottom:1px solid #eee">'+esc(i.name)+'<div style="color:#777;font-size:12px">'+esc(i.color)+' · Talla '+esc(i.size)+' · '+(Number(i.qty)||1)+' unidad(es)</div></td><td align="right" style="padding:12px 0;border-bottom:1px solid #eee;white-space:nowrap">'+clp((Number(i.price)||0)*(Number(i.qty)||1))+'</td></tr>').join("");
