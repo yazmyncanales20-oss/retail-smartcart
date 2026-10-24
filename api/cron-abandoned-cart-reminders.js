@@ -10,7 +10,7 @@ export default async function handler(req,res){
  const auth=String(req.headers.authorization||"");
  if(!secret||auth!=="Bearer "+secret)return res.status(401).json({error:"No autorizado."});
  const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
- if(!url||!key||!process.env.BREVO_API_KEY)return res.status(503).json({error:"Configura Supabase, BREVO_API_KEY y CRON_SECRET en Vercel Preview."});
+ if(!url||!key||!process.env.BREVO_API_KEY)return res.status(503).json({error:"Configura Supabase, BREVO_API_KEY y CRON_SECRET en Vercel Production."});
  const headers={apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Prefer:"return=representation"};
  try{
   const settingsResponse=await fetch(url+"/rest/v1/smartcart_reminder_settings?id=eq.1&select=mode,delay_hours&limit=1",{headers});
