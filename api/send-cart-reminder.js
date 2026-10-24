@@ -7,7 +7,7 @@ export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});
  const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
- if(!url||!key)return res.status(503).json({sent:false,error:"Falta configurar la conexión con Supabase en Vercel Preview."});
+ if(!url||!key)return res.status(503).json({sent:false,error:"Falta configurar la conexión con Supabase en Vercel Production."});
  if(!process.env.BREVO_API_KEY)return res.status(503).json({sent:false,error:"Falta configurar BREVO_API_KEY en Vercel Preview."});
  const token=String(req.body?.cartToken||"").trim();
  if(!token||token.length>100)return res.status(400).json({sent:false,error:"Identificador de carrito inválido."});
