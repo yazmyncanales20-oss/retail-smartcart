@@ -5,7 +5,7 @@ export default async function handler(req,res){
  if(!url||!key)return res.status(503).json({error:"El sistema de cupones aún no está configurado."});
  const b=req.body||{};
  if(!b.code||!b.email)return res.status(400).json({error:"Ingresa código y correo."});
- const q=url+"/rest/v1/smartcart_abandoned_carts?cart_token=eq."+encodeURIComponent(b.cartToken)+"&customer_email=eq."+encodeURIComponent(String(b.email).toLowerCase())+"&coupon_code=eq."+encodeURIComponent(String(b.code).trim().toUpperCase())+"&status=eq.reminded&select=coupon_code,coupon_amount_clp,reminder_sent_at";
+ const q=url+"/rest/v1/smartcart_abandoned_carts?customer_email=eq."+encodeURIComponent(String(b.email).toLowerCase())+"&coupon_code=eq."+encodeURIComponent(String(b.code).trim().toUpperCase())+"&status=eq.reminded&select=coupon_code,coupon_amount_clp,reminder_sent_at";
  const r=await fetch(q,{headers:{apikey:key,Authorization:"Bearer "+key}});
  if(!r.ok)return res.status(502).json({error:"No se pudo validar el cupón."});
  const rows=await r.json(),row=rows[0];
