@@ -113,17 +113,17 @@ const finish=async()=>{
    const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/create_demo_order",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_customer_email:email,p_delivery_method:delivery==="Retiro en tienda"?"store_pickup":"home_delivery",p_cart_reminder_consent:reminders,p_items:cart.map(i=>({variant_id:i.variantId,quantity:i.qty}))})});
    const payload=await response.json();
    if(!response.ok)throw new Error(payload.message||payload.details||"No se pudo guardar el pedido");
-   const order={id:payload.order_number,customer:customer.fullName,items:count,total:Math.max(0,payload.total_clp-(coupon?.amount||0)),status:"Por preparar"};
+   const order={id:payload.order_number,customer:customer.fullName,email,items:count,total:Math.max(0,payload.total_clp-(coupon?.amount||0)),status:"Pedido recibido",delivery,createdAt:new Date().toISOString()};
    setReceipt({id:order.id,date:new Date().toLocaleString("es-CL"),customer:{...customer,email},items:[...cart],subtotal,shipping:delivery==="Retiro en tienda"?0:shipping,total:order.total,paymentMethod,delivery});
-   setOrders(old=>[order,...old]);
+   setOrders(old=>{const next=[order,...old];try{localStorage.setItem("smartcart-orders",JSON.stringify(next))}catch{}return next});
    setProducts(old=>old.map(p=>{const items=cart.filter(i=>i.id===p.id);if(!items.length)return p;const stock={...p.stock};items.forEach(i=>stock[i.color]={...stock[i.color],[i.size]:Math.max(0,stock[i.color][i.size]-i.qty)});return {...p,stock}}));
    setCart([]);setCheckout(false);setCartOpen(false);setCoupon(null);try{localStorage.removeItem("smartcart-cart-started")}catch{}setNotice("Pedido "+order.id+" registrado. Pago simulado; no se realizó ningún cobro.");
    return;
   }catch(error){setNotice("No se pudo registrar en Supabase: "+error.message);return;}
  }
- const order={id:"RS-DEMO-"+(1049+orders.length-3),customer:customer.fullName,items:count,total:Math.max(0,subtotal+(delivery==="Retiro en tienda"?0:shipping)-(coupon?.amount||0)),status:"Por preparar"};
+ const order={id:"RS-DEMO-"+(1049+orders.length-3),customer:customer.fullName,email,items:count,total:Math.max(0,subtotal+(delivery==="Retiro en tienda"?0:shipping)-(coupon?.amount||0)),status:"Pedido recibido",delivery,createdAt:new Date().toISOString()};
  setReceipt({id:order.id,date:new Date().toLocaleString("es-CL"),customer:{...customer,email},items:[...cart],subtotal,shipping:delivery==="Retiro en tienda"?0:shipping,total:order.total,paymentMethod,delivery});
- setOrders(old=>[order,...old]);setProducts(old=>old.map(p=>{const items=cart.filter(i=>i.id===p.id);if(!items.length)return p;const stock={...p.stock};items.forEach(i=>stock[i.color]={...stock[i.color],[i.size]:Math.max(0,stock[i.color][i.size]-i.qty)});return {...p,stock}}));
+ setOrders(old=>{const next=[order,...old];try{localStorage.setItem("smartcart-orders",JSON.stringify(next))}catch{}return next});setProducts(old=>old.map(p=>{const items=cart.filter(i=>i.id===p.id);if(!items.length)return p;const stock={...p.stock};items.forEach(i=>stock[i.color]={...stock[i.color],[i.size]:Math.max(0,stock[i.color][i.size]-i.qty)});return {...p,stock}}));
  setCart([]);setCheckout(false);setCartOpen(false);setCoupon(null);try{localStorage.removeItem("smartcart-cart-started")}catch{}setNotice("Pedido de demostración "+order.id+" creado localmente. Sin cobros reales.");
 };
 const installApp=async()=>{if(installPrompt){await installPrompt.prompt();await installPrompt.userChoice;setInstallPrompt(null);return;}setNotice(/iPhone|iPad|iPod/i.test(navigator.userAgent)?"Para instalar en iPhone: Compartir → Añadir a pantalla de inicio.":"Para instalar, usa el icono de instalación de la barra de direcciones del navegador si está disponible.");};
