@@ -29,3 +29,32 @@
 .detail-overlay{z-index:45}.detail-modal{position:relative;background:var(--paper);width:min(980px,calc(100% - 28px));max-height:calc(100vh - 32px);overflow:auto;display:grid;grid-template-columns:.9fr 1.1fr}.detail-image{width:100%;height:100%;min-height:520px;max-height:720px;object-fit:cover;background:#efeee8}.detail-info{padding:34px 30px}.detail-info h2{font-family:var(--serif);font-size:32px;font-weight:500;margin:12px 0}.detail-price{font-size:18px}.detail-stock-total{font-size:11px;color:var(--muted);margin:17px 0}.detail-info h3{font-size:12px;margin:22px 0 12px}.detail-close{position:absolute;top:12px;right:12px;z-index:2;background:#fffefaed}.detail-color-row{display:grid;grid-template-columns:16px minmax(80px,.7fr) minmax(130px,1fr) auto;align-items:center;gap:9px;padding:11px 0;border-top:1px solid var(--line)}.detail-color-row>b{font-size:10px}.detail-color-row>div{display:flex;flex-wrap:wrap;gap:5px}.detail-qty{font-size:9px;background:#edeee7;padding:5px;color:#414936}.detail-qty.sold-out{background:#f5e7e0;color:#a15f48}.detail-color-row .secondary{padding:7px;font-size:9px}.detail-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.detail-actions .primary{gap:8px}.empty .primary{margin-top:10px}
 @media(max-width:900px){.header{padding:0 4%;gap:12px}.nav{gap:10px}.nav button{font-size:10px}.actions{gap:4px}.search input{width:80px}.admin-link{padding:8px}.detail-modal{grid-template-columns:.8fr 1.2fr}.detail-image{min-height:460px}.detail-info{padding:27px 20px}.detail-color-row{grid-template-columns:16px 1fr}.detail-color-row>div{grid-column:2}.detail-color-row .secondary{grid-column:2;justify-self:start}}
 @media(max-width:640px){.notification-consent{bottom:12px;align-items:flex-start;flex-wrap:wrap}.notification-consent>div{min-width:100%}.notification-consent .secondary{margin-left:28px}.footer-links{gap:7px;flex-wrap:wrap;justify-content:center}.detail-modal{display:block}.detail-image{height:260px;min-height:0;display:block}.detail-info{padding:22px 17px}.detail-info h2{font-size:26px}.detail-color-row{grid-template-columns:16px minmax(75px,1fr)}.detail-color-row>div,.detail-color-row .secondary{grid-column:2}.detail-actions>*{flex:1}.header .actions .admin-link{display:none}}
+
+
+/* Checkout ampliado, cupones y comprobante visual de pedido */
+.shipping-fields{grid-template-columns:1fr 1fr;gap:0 12px}
+.shipping-fields .field:first-child,.shipping-fields .field:last-child{grid-column:1/-1}
+.field select,.field textarea{display:block;width:100%;margin-top:7px;border:1px solid var(--line);background:#fffefa;padding:11px;font:inherit;font-size:11px;color:var(--ink);border-radius:0}
+.field textarea{min-height:72px;resize:vertical}
+.payment-options{display:grid;gap:7px}
+.payment-options .delivery{margin:0;background:#fffefa}
+.payment-options .delivery>svg{flex-shrink:0}
+.coupon-offer{padding:15px;margin:14px 0;background:#eff0e9;border:1px dashed #8a947b;color:#414936}
+.coupon-offer>b{font-size:12px}
+.coupon-offer p{font-size:11px;line-height:1.6;margin:7px 0}
+.coupon-offer small{display:block;font-size:9px;color:#7d806f;margin-bottom:10px}
+.receipt-modal{position:relative;width:min(680px,calc(100% - 24px));max-height:calc(100vh - 24px);overflow:auto;background:#f0eee8;padding:22px}
+.receipt-paper{max-width:540px;margin:0 auto;background:#fffefa;padding:30px;color:#33362d;box-shadow:0 3px 18px #0000000c}
+.receipt-brand{font-family:var(--serif);font-size:24px;font-weight:600;margin-bottom:18px}
+.receipt-brand span{font-weight:300;color:#7b806b}
+.receipt-paper h2{font-family:var(--serif);font-size:28px;font-weight:500;margin:9px 0 14px}
+.receipt-paper h3{font-size:12px;margin:18px 0 8px}
+.receipt-paper p{font-size:10px;line-height:1.8;overflow-wrap:anywhere}
+.receipt-paper hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.receipt-line{display:flex;justify-content:space-between;gap:12px}
+.receipt-line span{flex:1}
+.receipt-line b{text-align:right}
+.receipt-total{border-top:1px solid var(--line);padding-top:12px;font-size:12px!important;font-weight:700}
+.receipt-paper .report-note{margin:18px 0;font-size:10px}
+@media(max-width:560px){.shipping-fields{grid-template-columns:1fr}.shipping-fields .field{grid-column:1/-1}.receipt-modal{padding:10px}.receipt-paper{padding:20px 15px}.receipt-paper h2{font-size:24px}}
+@media print{body *{visibility:hidden!important}.receipt-modal,.receipt-modal *{visibility:visible!important}.receipt-modal{position:absolute;inset:0;width:100%;max-height:none;overflow:visible;background:white;padding:0}.receipt-paper{max-width:none;box-shadow:none;padding:15mm}.receipt-paper .primary,.receipt-paper .continue,.detail-close{display:none!important}}
