@@ -6,7 +6,12 @@ export default async function handler(req,res){
  if(!secret||req.headers.authorization!=="Bearer "+secret)return res.status(401).json({error:"Unauthorized"});
  const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
  if(!url||!key||!process.env.RESEND_API_KEY||!process.env.RESEND_FROM_EMAIL)return res.status(503).json({error:"Configura SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY y RESEND_FROM_EMAIL."});
- const settingResponse=await fetch(url+"/rest/v1/smartcart_reminder_settings?id=eq.1&select=mode,delay_hours&limit=1",{headers});\n const settingRows=settingResponse.ok?await settingResponse.json():[];\n const setting=settingRows[0]||{mode:"manual",delay_hours:1};\n if(setting.mode!=="automatic")return res.status(200).json({processed:0,results:[],skipped:true,reason:"El envío automático está desactivado; el modo actual es manual."});\n const delayHours=Math.max(1,Math.min(168,Number(setting.delay_hours)||1));\n const cutoff=new Date(Date.now()-delayHours*60*60*1000).toISOString();
+ const settingResponse=await fetch(url+"/rest/v1/smartcart_reminder_settings?id=eq.1&select=mode,delay_hours&limit=1",{headers});
+ const settingRows=settingResponse.ok?await settingResponse.json():[];
+ const setting=settingRows[0]||{mode:"manual",delay_hours:1};
+ if(setting.mode!=="automatic")return res.status(200).json({processed:0,results:[],skipped:true,reason:"El envío automático está desactivado; el modo actual es manual."});
+ const delayHours=Math.max(1,Math.min(168,Number(setting.delay_hours)||1));
+ const cutoff=new Date(Date.now()-delayHours*60*60*1000).toISOString();
  const headers={apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Prefer:"return=representation"};
  const q=url+"/rest/v1/smartcart_abandoned_carts?status=eq.active&marketing_consent=eq.true&reminder_sent_at=is.null&last_activity_at=lt."+encodeURIComponent(cutoff)+"&select=*";
  const r=await fetch(q,{headers});if(!r.ok)return res.status(502).json({error:"No se pudieron consultar carritos pendientes."});
