@@ -34,7 +34,7 @@ const seed = [
 {id:30,name:"Polera Cuello Alto",category:"Poleras",price:18990,tag:"Básico",colors:[["Marfil","#e8dfcf"],["Negro","#252525"]],sizes:["XS","S","M","L","XL"],stock:{"Marfil":{"XS":3,"S":6,"M":7,"L":4,"XL":2},"Negro":{"XS":4,"S":7,"M":8,"L":5,"XL":2}},image:"https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=900&q=85"}];
 const fmt=n=>new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(n);
 const stockTotal=p=>Object.values(p.stock).reduce((sum,c)=>sum+Object.values(c).reduce((a,n)=>a+n,0),0);
-const SUPABASE_URL=import.meta.env.VITE_SUPABASE_URL||"";
+const SUPABASE_URL=(import.meta.env.VITE_SUPABASE_URL||"").trim().replace(/\\/+$/, "").replace(/\\/rest\\/v1$/i, "");
 const SUPABASE_KEY=import.meta.env.VITE_SUPABASE_ANON_KEY||"";
 const ADMIN_NOTIFICATION_EMAIL=import.meta.env.VITE_ADMIN_NOTIFICATION_EMAIL||"";
 const WHATSAPP_NUMBER=(import.meta.env.VITE_WHATSAPP_NUMBER||"").replace(/\D/g,"");
