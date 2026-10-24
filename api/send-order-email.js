@@ -58,7 +58,12 @@ export default async function handler(req,res) {
   const verified=await fetch(dbUrl+"/rest/v1/orders?order_number=eq."+encodeURIComponent(String(order.id))+"&customer_email=eq."+encodeURIComponent(String(email).toLowerCase())+"&select=order_number&limit=1",{headers:{apikey:dbKey,Authorization:"Bearer "+dbKey}});
   if(!verified.ok)return res.status(502).json({sent:false,error:"No se pudo validar el pedido en la base de datos."});
   if(!(await verified.json()).length)return res.status(403).json({sent:false,error:"El pedido no está registrado en la base de datos; no se envió el correo."});
-  const admin=process.env.ADMIN_NOTIFICATION_EMAIL||process.env.VITE_ADMIN_NOTIFICATION_EMAIL;
+  const adminRecipients = [...new Set(
+    (process.env.ADMIN_NOTIFICATION_EMAILS || process.env.ADMIN_NOTIFICATION_EMAIL || process.env.VITE_ADMIN_NOTIFICATION_EMAIL || "")
+      .split(/[;,]/)
+      .map(value => value.trim().toLowerCase())
+      .filter(value => /^\S+@\S+\.\S+$/.test(value))
+  )];
   const items=Array.isArray(order.items)?order.items:[];
   const lines=items.map(i=>'<tr><td style="padding:12px 0;border-bottom:1px solid #eee">'+esc(i.name)+'<div style="color:#777;font-size:12px">'+esc(i.color)+' · Talla '+esc(i.size)+' · '+(Number(i.qty)||1)+' unidad(es)</div></td><td align="right" style="padding:12px 0;border-bottom:1px solid #eee;white-space:nowrap">'+clp((Number(i.price)||0)*(Number(i.qty)||1))+'</td></tr>').join("");
   const tracking=(process.env.VITE_PUBLIC_SITE_URL||"https://retail-smartcart-git-feat-reportes-supabase-pwa-preview-yazmyn.vercel.app");
@@ -82,9 +87,16 @@ export default async function handler(req,res) {
     const id=await sendEmail(sendOptions);
     sent.push({to:email,id});await logEvent("order_confirmation",email,order.id,"sent",id,null,{provider:emailJsReady?"emailjs":"configured-fallback"});
   } catch(e) {await logEvent("order_confirmation",email,order.id,"failed",null,e.message,{});return res.status(503).json({sent:false,error:e.message});}
-  if(admin&&admin!==email) {
-    try {const id=await sendEmail({to:admin,subject:"Nuevo pedido "+order.id+" · Retail SmartCart",html:html.replace("¡Gracias, "+esc(order.customer?.fullName||"por tu compra")+"!","Nuevo pedido recibido").replace("Adjuntamos tu comprobante en PDF.","Se adjunta el comprobante del pedido."),attachments});sent.push({to:admin,id});await logEvent("new_order_admin",admin,order.id,"sent",id,null,{customer_email:email});}
-    catch(e){await logEvent("new_order_admin",admin,order.id,"failed",null,e.message,{customer_email:email});}
+  const adminHtml = html;
+  for (const admin of adminRecipients) {
+    if (admin === String(email).trim().toLowerCase()) continue;
+    try {
+      const id = await sendEmail({to:admin,subject:"¡Gracias por tu compra! Pedido "+order.id+" · Retail SmartCart",html:adminHtml,attachments});
+      sent.push({to:admin,id});
+      await logEvent("new_order_admin",admin,order.id,"sent",id,null,{customer_email:email});
+    } catch(e) {
+      await logEvent("new_order_admin",admin,order.id,"failed",null,e.message,{customer_email:email});
+    }
   }
   return res.status(200).json({sent:true,recipients:sent.map(x=>x.to),message:"Correo de confirmación enviado."});
 }
