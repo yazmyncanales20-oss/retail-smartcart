@@ -1,4 +1,5 @@
-const statusMap={"Pedido recibido":"pending","En preparación":"processing","Despachado":"shipped","En camino":"in_transit","Entregado":"delivered","Cancelado":"cancelled"};\nconst allowed=new Set(Object.keys(statusMap));
+const statusMap={"Pedido recibido":"pending","En preparación":"processing","Despachado":"shipped","En camino":"in_transit","Entregado":"delivered","Cancelado":"cancelled"};
+const allowed=new Set(Object.keys(statusMap));
 export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});
