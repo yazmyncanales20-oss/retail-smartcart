@@ -1,4 +1,4 @@
-import { sendEmail, isEmailConfigured } from "./_email.js";
+import { sendEmail, isEmailConfigured } from "../lib/email.js";
 
 const clp=n=>new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(Number(n)||0);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
