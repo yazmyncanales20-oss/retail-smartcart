@@ -10,7 +10,17 @@ export default async function handler(req,res){
  const items=b.items.map(i=>({product_name_snapshot:String(i.name||"Prenda").slice(0,160),color_name_snapshot:String(i.color||"Sin especificar").slice(0,80),size_snapshot:String(i.size||"Sin especificar").slice(0,30),quantity:Math.max(1,Math.min(50,Math.floor(Number(i.qty)||1))),unit_price_clp:Math.max(0,Math.round(Number(i.price)||0)),variant_id:null}));
  const subtotal=items.reduce((n,i)=>n+i.quantity*i.unit_price_clp,0);
  const shipping=Math.max(0,Math.round(Number(b.shipping)||0));
- const discount=Math.max(0,Math.round(Number(b.discount)||0));
+ let discount=0;
+ const couponCode=String(b.couponCode||"").trim().toUpperCase();
+ if(couponCode){
+  const couponUrl=url+"/rest/v1/smartcart_abandoned_carts?customer_email=eq."+encodeURIComponent(String(b.email).toLowerCase())+"&coupon_code=eq."+encodeURIComponent(couponCode)+"&status=eq.reminded&select=coupon_code,coupon_amount_clp,reminder_sent_at&limit=1";
+  const couponRes=await fetch(couponUrl,{headers:{apikey:key,Authorization:"Bearer "+key}});
+  if(!couponRes.ok)return res.status(502).json({error:"No se pudo validar el cupón antes de confirmar el pedido."});
+  const coupons=await couponRes.json(),validCoupon=coupons[0];
+  if(!validCoupon||!validCoupon.reminder_sent_at||Date.now()-new Date(validCoupon.reminder_sent_at).getTime()>7*24*60*60*1000)return res.status(400).json({error:"El cupón no es válido para este correo o ya venció."});
+  if(subtotal<20000)return res.status(400).json({error:"El cupón requiere una compra mínima de $20.000."});
+  discount=Math.min(subtotal,Math.max(0,Math.round(Number(validCoupon.coupon_amount_clp)||0)));
+ }
  const total=Math.max(0,subtotal+shipping-discount);
  const orderNumber="RS-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
  const headers={apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Prefer:"return=representation"};
